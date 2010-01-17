@@ -1,0 +1,5 @@
+queue.py:
+	An extended Queue implementation
+
+worker.py:
+	Worker pool

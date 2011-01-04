@@ -244,7 +244,7 @@ class srt(object):
 		# Dump content into a SRT file
 		n=1
 		for s in self.items:
-			o.write(str(n)+"\n"+unicode(s)+"\n\n")
+			o.write(unicode(n)+"\n"+unicode(s)+"\n\n")
 			#print >> o, n
 			#print >> o, s
 			#print >> o
@@ -263,36 +263,38 @@ def guess_codec(fn, guesses=DEFAULT_GUESSES):
 	print >> sys.stderr, "Cannot decode file ", fn, " with any codecs."
 	return None
 
-outsrt=srt()
-
-def mergesrt(fn, codec_guesses, offset, scale, threshold):
+def mergesrt(outsrt, fn, codec_guesses, offset, scale, threshold):
 	f=guess_codec(fn, codec_guesses)
 	if f is None:
 		print >> sys.stderr, "Skipping file ", fn
 		return
 	outsrt.load(f, offset, scale, threshold)
 
-def loadsrt(option, opt, value, parser):
+def loadsrt(outsrt, option, opt, value, parser):
 	#print parser.values.scale*100, parser.values.offset, value
 	codecs=parser.values.codecs.split(',')
-	mergesrt(value, codecs, parser.values.offset, parser.values.scale, parser.values.threshold)
+	mergesrt(outsrt, value, codecs, parser.values.offset, parser.values.scale, parser.values.threshold)
 
-def savesrt(fn, codec):
+def savesrt(outsrt, fn, codec):
 	if fn=="-":
 		outsrt.write(sys.stdout)
 		return
 	outsrt.write(codecs.open(fn, "w", codec))
 
 if __name__=="__main__":
+	outsrt=srt()
+	loadsrt_c=lambda op, o, v, p: loadsrt(outsrt, op, o, v, p)
 	usage = "usage: %prog [options]" 
 	parser=optparse.OptionParser(usage=usage)
 	parser.add_option("-o", "--output", dest="ofn", default="-", help="output srt FILE", metavar="FILE")
-	parser.add_option("-i", "--input", action="callback", callback=loadsrt, type="string", help="input srt FILE", metavar="FILE")
+	parser.add_option("-i", "--input", action="callback", callback=loadsrt_c, type="string", help="input srt FILE", metavar="FILE")
 	parser.add_option("-t", "--offset", dest="offset", type="int", default=0, help="time offset of next input file, in milliseconds", metavar="OFFSET")
 	parser.add_option("-s", "--scale", dest="scale", type="float", default=1, help="time scale of next input file, float number", metavar="SCALE")
 	parser.add_option("-c", "--codecs", dest="codecs", default=DEFAULT_CODECS, help="CODECS used to read next input file", metavar="CODEC[,CODEC...]")
 	parser.add_option("-C", "--output-codec", dest="ocodec", default="GB18030", help="CODEC used to write output file", metavar="CODEC")
 	parser.add_option("-r", "--thresold", dest="threshold", type="int", default=1, help="subtitles last for time shorter than threshold will be dropped", metavar="THRESHOLD")
 	(options, args)=parser.parse_args()
-	savesrt(parser.values.ofn, parser.values.ocodec)
-
+	if len(outsrt)==0:
+		parser.print_help()
+	else:
+		savesrt(outsrt, parser.values.ofn, parser.values.ocodec)

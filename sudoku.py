@@ -127,7 +127,7 @@ class Sudoku(object):
                     v.setitem(i, j, self.getitem(i,j).value)
         return v
     def read_board(self, s):
-        if isinstance(s, basestring):
+        if isinstance(s, str):
             for row in range(9):
                 for col in range(9):
                     c=s[row][col]
@@ -204,8 +204,8 @@ class Sudoku(object):
         return v
     def get_block(self, row, col):
         v=[]
-        block_row=row/3*3
-        block_col=col/3*3
+        block_row=row//3*3
+        block_col=col//3*3
         for i in range(block_row, block_row+3):
             for j in range(block_col, block_col+3):
                 v.append(self.getitem(i, j))
@@ -229,7 +229,7 @@ class Sudoku(object):
             for j in range(0, 9, 3):
                 c=check_single(self.get_block(i, j))
                 if c[0]:
-                    row=i+c[0]/3
+                    row=i+c[0]//3
                     col=j+c[0]%3
                     self.setitem(row, col, c[1])
                     ret+=1
@@ -289,7 +289,7 @@ def solve(sudoku):
     #print "Guessing..."
     guess(sudoku)
     if not sudoku.solved():
-        print "Sudoku is incorrect"
+        print("Sudoku is incorrect")
 def guess(sudoku):
     #TODO: Find a unfilled cell and begin guess
     for row in range(9):
@@ -446,17 +446,17 @@ __1__2__9
 9|431872659
 """
     test_sudoku(src.split(), result)
-    print "all tests passed"
+    print("all tests passed")
 
 if __name__=="__main__":
     if len(sys.argv)>1:
         s=open(sys.argv[1])
-        print "Reading..."
+        print("Reading...")
         a=Sudoku()
         a.read_board(s)
-        print a.formatted()
+        print(a.formatted())
         solve(a)
-        print a.formatted()
-        print a.solved()
+        print(a.formatted())
+        print(a.solved())
     else:
         test()
